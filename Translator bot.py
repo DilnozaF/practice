@@ -106,7 +106,7 @@ def handle_text(update: Update, context: CallbackContext):
         update.message.reply_text("❌ An error occurred while translating.")
 
 def main():
-    TOKEN = '7219673447:AAEeYCp3KasM7VSkcRjfoyHE3QRBFPVhnxc'
+    TOKEN = 'YOUR TOKEN'
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
 
