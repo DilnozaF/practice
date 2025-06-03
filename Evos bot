@@ -1,0 +1,389 @@
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, Update, ReplyKeyboardRemove
+from telegram.ext import (
+    ApplicationBuilder, CommandHandler, MessageHandler,
+    filters, ConversationHandler, CallbackQueryHandler, ContextTypes
+)
+
+PHONE, MAIN_MENU, CATEGORY_MENU, CHOOSING_QUANTITY = range(4)
+user_cart = {}
+
+PRODUCTS = {
+    "Combo Plus Isituvchan (Qora choy)": 16000,
+    "FitCombo": 30000,
+    "Iftar kofte grill mol go'shtidan": 35000,
+    "Donar boks mol go'shtidan": 34000,
+    "Donar boks tovuq go'shtidan": 32000,
+    "Iftar strips tovuq go'shtidan": 30000,
+    "COMBO+": 16000,
+    "Kids COMBO": 16000,
+    "Mol goʼshtidan qalampir lavash": 26000,
+    "Tovuq goʼshtli qalampir lavash": 24000,
+    "Mol goʼshtidan pishloqli lavash Standard": 29000,
+    "Lavash cheese tovuq go'sht Standart": 27000,
+    "FITTER": 22000,
+    "Lavash tovuq go'sht": 24000,
+    "Lavash mol go'sht": 26000,
+    "Mol goʼshtidan shaurma": 26000,
+    "Tovuq goʼshtli shaurma": 24000,
+    "Mol goʼshtidan ta'mi o'tkir shaurma": 26000,
+    "Tovuq go'shtidan ta'mi o'tkir shaurma": 24000,
+    "Gamburger": 22000,
+    "Chizburger": 37000,
+    "Dablburger": 33000,
+    "Dablchizburger": 40000,
+    "Hot-dog baguette": 27000,
+    "Sub tovug cheese": 25000,
+    "Sub tovug": 24000,
+    "Hot-dog baguette double": 30000,
+    "Hot-dog kids": 15000,
+    "Sub go'sht cheese": 24000,
+    "Hot-dog classic": 22000,
+    "Sub go'sht": 26000,
+    "Sok dena 0,3l": 9000,
+    "Suv 0,5": 5000,
+    "Pepsi 0,5": 12000,
+    "Pepsi 1,5": 25000,
+    "Quyib beriladigan Pepsi": 15000,
+    "Bliss sharbati": 11000,
+    "Amerikano": 20000,
+    "Latte": 18000,
+    "Ko'k choy": 9000,
+    "Qora choy": 9000,
+    "Limonli ko'k choy": 12000,
+    "Medovik Asal": 23000,
+    "Chizkeyk": 23000,
+    "Donut karameli": 23000,
+    "Donut mevali": 23000,
+    "Qovurilgan Kartoshka": 18000,
+    "Jaydari Kartoshka": 18000,
+    "Guruch": 9000,
+    "Salat": 9000,
+    "Strips": 18000,
+    "Sarimsoqli qayla": 9000,
+    "Ketchup": 4000,
+    "Moyanez": 4000,
+    "Pishloqli qayla": 9000,
+    "Chili qaylasi": 9000
+}
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[KeyboardButton("📱 Telefon raqamingizni yuboring", request_contact=True)]]
+    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+    await update.message.reply_text("Xush kelibsiz!\nAvval telefon raqamingizni yuboring:", reply_markup=reply_markup)
+    return PHONE
+
+
+async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_phone = update.message.contact.phone_number
+    await update.message.reply_text("✅ Telefon raqamingiz qabul qilindi")
+
+    keyboard = [
+        [KeyboardButton("🍽 Menyu")],
+        [KeyboardButton("ℹ️ Biz Haqimizda")],
+        [KeyboardButton("🛒 Savat")],
+        [KeyboardButton("📞 Aloqa")]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text("Asosiy Menyu:", reply_markup=reply_markup)
+    return MAIN_MENU
+
+
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    if text == "🍽 Menyu":
+        category_keyboard = [
+            [KeyboardButton("🍱 Setlar (8)")],
+            [KeyboardButton("🌯 Lavash (9)"), KeyboardButton("🥙 Shaurma (4)")],
+            [KeyboardButton("🍔 Burger (4)"), KeyboardButton("🌭 HotDog (8)")],
+            [KeyboardButton("🥤 Ichimliklar (11)")],
+            [KeyboardButton("🍰 Shirinlik va disertlar (4)")],
+            [KeyboardButton("🍟 Garnirlar (10)")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(category_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Marhamat, buyurtma berishingiz mumkin!", reply_markup=reply_markup)
+        return CATEGORY_MENU
+
+    elif text == "🍱 Setlar (8)":
+        setlar_keyboard = [
+            [KeyboardButton("Combo Plus Isituvchan (Qora choy)"), KeyboardButton("FitCombo")],
+            [KeyboardButton("Iftar kofte grill mol go'shtidan"), KeyboardButton("Donar boks mol go'shtidan")],
+            [KeyboardButton("Donar boks tovuq go'shtidan"), KeyboardButton("Iftar strips tovuq go'shtidan")],
+            [KeyboardButton("COMBO+"), KeyboardButton("Kids COMBO")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(setlar_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/setlar.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🌯 Lavash (9)":
+        lavash_keyboard = [
+            [KeyboardButton("Mol goʼshtidan qalampir lavash"), KeyboardButton("Tovuq goʼshtli qalampir lavash")],
+            [KeyboardButton("Mol goʼshtidan pishloqli lavash Standard"),
+             KeyboardButton("Lavash cheese tovuq go'sht Standart")],
+            [KeyboardButton("FITTER"), KeyboardButton("Lavash tovuq go'sht")],
+            [KeyboardButton("Lavash mol go'sht")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(lavash_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/lavash.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🥙 Shaurma (4)":
+        shaurma_keyboard = [
+            [KeyboardButton("Mol goʼshtidan shaurma"), KeyboardButton("Tovuq goʼshtli shaurma")],
+            [KeyboardButton("Mol goʼshtidan ta'mi o'tkir shaurma"),
+             KeyboardButton("Tovuq go'shtidan ta'mi o'tkir shaurma")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(shaurma_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/shaurma.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🍔 Burger (4)":
+            burger_keyboard = [
+                [KeyboardButton("Gamburger"), KeyboardButton("Chizburger")],
+                [KeyboardButton("Dablburger"), KeyboardButton("Dablchizburger")],
+                [KeyboardButton("🔙 Orqaga qaytish")]
+            ]
+            reply_markup = ReplyKeyboardMarkup(burger_keyboard, resize_keyboard=True)
+            with open('C:/Users/user/Desktop/burger.jpg', 'rb') as photo:
+                await update.message.reply_photo(
+                    photo=photo,
+                    reply_markup=reply_markup)
+
+    elif text == "🌭 HotDog (8)":
+        hotdog_keyboard = [
+            [KeyboardButton("Hot-dog baguette"), KeyboardButton("Sub tovug cheese")],
+            [KeyboardButton("Sub tovug"), KeyboardButton("Hot-dog baguette double")],
+            [KeyboardButton("Hot-dog kids"), KeyboardButton("Sub go'sht cheese")],
+            [KeyboardButton("Hot-dog classic"), KeyboardButton("Sub go'sht")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(hotdog_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/hotdog.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🥤 Ichimliklar (11)":
+        ichimlik_keyboard = [
+            [KeyboardButton("Sok dena 0,3l"), KeyboardButton("Suv 0,5")],
+            [KeyboardButton("Pepsi 0,5"), KeyboardButton("Pepsi 1,5")],
+            [KeyboardButton("Quyib beriladigan Pepsi"), KeyboardButton("Bliss sharbati")],
+            [KeyboardButton("Amerikano"), KeyboardButton("Latte")],
+            [KeyboardButton("Ko'k choy"), KeyboardButton("Qora choy")],
+            [KeyboardButton("Limonli ko'k choy")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(ichimlik_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/ichimliklar.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🍰 Shirinlik va disertlar (4)":
+        dessert_keyboard = [
+            [KeyboardButton("Medovik Asal"), KeyboardButton("Chizkeyk")],
+            [KeyboardButton("Donut karameli"), KeyboardButton("Donut mevali")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(dessert_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/dessert.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text == "🍟 Garnirlar (10)":
+        garnirlar_keyboard = [
+            [KeyboardButton("Qovurilgan Kartoshka"), KeyboardButton("Jaydari Kartoshka")],
+            [KeyboardButton("Guruch"), KeyboardButton("Salat")],
+            [KeyboardButton("Strips"), KeyboardButton("Sarimsoqli qayla")],
+            [KeyboardButton("Ketchup"), KeyboardButton("Moyanez")],
+            [KeyboardButton("Pishloqli qayla"), KeyboardButton("Chili qaylasi")],
+            [KeyboardButton("🔙 Orqaga qaytish")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(garnirlar_keyboard, resize_keyboard=True)
+        with open('C:/Users/user/Desktop/garnirlar.jpg', 'rb') as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                reply_markup=reply_markup)
+
+    elif text in PRODUCTS:
+        context.user_data["selected_product"] = text
+        await update.message.reply_text(
+            f"{text} tanlandi. Narxi: {PRODUCTS[text]} so'm\nNechta buyurtma qilmoqchisiz?",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        return CHOOSING_QUANTITY
+
+
+    elif text == "ℹ️ Biz Haqimizda":
+
+        with open('C:/Users/user/Desktop/evos.jpg', 'rb') as photo:
+
+            await update.message.reply_photo(
+
+                photo=photo,
+
+                caption=(
+
+                    "<b>Kompaniyamiz haqida:</b>\n\n"
+
+                    "Kompaniyamizning birinchi filiali 2006 yilda ochilgan bo’lib, "
+
+                    "bugungi kunga qadar muvaffaqiyatli faoliyat yuritmoqda. "
+
+                    "15 yil davomida kompaniya avtobus bekatidagi kichik ovqatlanish joyidan "
+
+                    "O‘zbekiston bo‘ylab 60 dan ortiq restoranli zamonaviy tarmoqqa aylandi.\n\n"
+
+                    "Batafsil: https://evos.uz/uz/about/"
+
+                ),
+
+                parse_mode='HTML'
+
+            )
+
+        return MAIN_MENU
+
+    elif text == "🛒 Savat":
+        user_id = update.effective_user.id
+        if user_id not in user_cart or not user_cart[user_id]:
+            await update.message.reply_text("🛒 Savatingiz bo'sh 🗑")
+        else:
+            cart_items = user_cart[user_id]
+            message = "🛒 Savatingiz:\n\n"
+            total = 0
+
+            for product, quantity in cart_items.items():
+                price = PRODUCTS[product] * quantity
+                message += f"{product} x {quantity} = {price} so'm\n"
+                total += price
+
+            message += f"\nJami: {total} so'm"
+
+            keyboard = [
+                [KeyboardButton("🚖 Buyurtma berish")],
+                [KeyboardButton("🔄 Savatni tozalash")],
+                [KeyboardButton("🔙 Orqaga qaytish")]
+            ]
+            reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            await update.message.reply_text(message, reply_markup=reply_markup)
+        return MAIN_MENU
+
+    elif text == "📞 Aloqa":
+        await update.message.reply_text(
+            "📞 Kontaktlar:\n"
+            "Call-центр:\n"
+            "+998 71-203-12-12\n"
+            "+998 71-203-55-55\n\n"
+            "Yetkazib berish raqamlari:\n"
+            "Toshkent: +998 71-203-12-12\n"
+            "Namangan: +998 78-147-12-12\n"
+            "Farg`ona: +998 73-249-12-12\n"
+            "Qo`qon: +998 73-542-78-78\n"
+            "Andijon: +998 74-224-12-12\n"
+            "Samarqand: +998 78-129-16-16\n"
+            "Qarshi: +998 78-129-17-17"
+        )
+        return MAIN_MENU
+
+    elif text == "🚖 Buyurtma berish":
+        user_id = update.effective_user.id
+        if user_id in user_cart and user_cart[user_id]:
+            await update.message.reply_text("Buyurtmangiz qabul qilindi! Tez orada operator siz bilan bog'lanadi.")
+            user_cart[user_id] = {}  # Clear the cart
+        else:
+            await update.message.reply_text("Savat bo'sh. Avval mahsulot qo'shing.")
+        return MAIN_MENU
+
+    elif text == "🔄 Savatni tozalash":
+        user_id = update.effective_user.id
+        user_cart[user_id] = {}
+        await update.message.reply_text("Savat tozalandi!")
+        return MAIN_MENU
+
+    elif text == "🔙 Orqaga qaytish":
+        keyboard = [
+            [KeyboardButton("🍽 Menyu")],
+            [KeyboardButton("ℹ️ Biz Haqimizda")],
+            [KeyboardButton("🛒 Savat")],
+            [KeyboardButton("📞 Aloqa")]
+        ]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text("Asosiy Menyu:", reply_markup=reply_markup)
+        return MAIN_MENU
+
+    else:
+        await update.message.reply_text("Iltimos, menyudan birini tanlang.")
+        return MAIN_MENU
+
+
+async def quantity(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    product = context.user_data.get("selected_product")
+
+    if not product:
+        await update.message.reply_text("Avval mahsulotni tanlang.")
+        return await button(update, context)
+
+    try:
+        qty = int(update.message.text)
+        if qty <= 0:
+            raise ValueError
+    except ValueError:
+        await update.message.reply_text("Iltimos, to'g'ri son kiriting.")
+        return CHOOSING_QUANTITY
+
+    if user_id not in user_cart:
+        user_cart[user_id] = {}
+
+    user_cart[user_id][product] = user_cart[user_id].get(product, 0) + qty
+
+    keyboard = [
+        [KeyboardButton("🍽 Menyu")],
+        [KeyboardButton("ℹ️ Biz Haqimizda")],
+        [KeyboardButton("🛒 Savat")],
+        [KeyboardButton("📞 Aloqa")]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+    await update.message.reply_text(
+        f"{product} x {qty} savatga qo'shildi ✅",
+        reply_markup=reply_markup
+    )
+    return MAIN_MENU
+
+
+def main():
+    app = ApplicationBuilder().token("TOKEN").build()
+
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={
+            PHONE: [MessageHandler(filters.CONTACT, phone)],
+            MAIN_MENU: [MessageHandler(filters.TEXT & ~filters.COMMAND, button)],
+            CATEGORY_MENU: [MessageHandler(filters.TEXT & ~filters.COMMAND, button)],
+            CHOOSING_QUANTITY: [MessageHandler(filters.TEXT & ~filters.COMMAND, quantity)],
+        },
+        fallbacks=[CommandHandler('start', start)],
+    )
+
+    app.add_handler(conv_handler)
+
+    print("Bot ishlayapti...")
+    app.run_polling()
+
+
+if __name__ == '__main__':
+    main()
